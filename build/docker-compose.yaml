@@ -1,0 +1,135 @@
+services:
+  mm-database:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    ports:
+      - 54322:5432
+    volumes:
+      - ./volumes/mm-database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aimodelmatch}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aimodelmatch}
+      POSTGRES_DB: ${POSTGRES_DB:-aimodelmatch}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aimodelmatch}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - aimm-network
+
+  mm-migrate:
+    image: aimodelmatch/backend-migrate:latest
+    restart: no
+    depends_on:
+      mm-database:
+        condition: service_healthy
+    environment:
+      DB_HOST: ${DB_HOST:-mm-database}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USERNAME:-aimodelmatch}
+      DB_PASSWORD: ${DB_PASSWORD:-aimodelmatch}
+      DB_USER: ${DB_USER:-aimodelmatch}
+      DB_NAME: ${DB_NAME:-aimodelmatch}
+      DB_SSL_MODE: ${DB_SSL_MODE:-disable}
+    networks:
+      - aimm-network
+
+  mm-webapp:
+    image: aimodelmatch/backend-webapp:latest
+    restart: unless-stopped
+    ports:
+      - 8001:8001
+    depends_on:
+      mm-database:
+        condition: service_healthy
+    environment:
+      DB_HOST: ${DB_HOST:-mm-database}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USERNAME:-aimodelmatch}
+      DB_PASSWORD: ${DB_PASSWORD:-aimodelmatch}
+      DB_NAME: ${DB_NAME:-aimodelmatch}
+      DB_SSL_MODE: ${DB_SSL_MODE:-disable}
+      DB_LOG_SLOW_QUERY_THRESHOLD: ${DB_LOG_SLOW_QUERY_THRESHOLD:-1}
+      APP_PORT: ${APP_PORT:-8001}
+      APP_MODE: ${APP_MODE:-debug}
+      APP_CORS_ORIGIN: ${APP_CORS_ORIGIN:-http://localhost:5173}
+      SEARCH_RELEVANCE_THRESHOLD: ${SEARCH_RELEVANCE_THRESHOLD:-0.05}
+      PUBSUB_PERSIST_EVENTS_ON_DB: ${PUBSUB_PERSIST_EVENTS_ON_DB:-true}
+      PUBSUB_PERSIST_EVENTS_RETENTION_DAYS: ${PUBSUB_PERSIST_EVENTS_RETENTION_DAYS:-365}
+      PUBSUB_SYNC_MODE: ${PUBSUB_SYNC_MODE:-false}
+      PICKER_CORRELATION_VALIDITY_HOURS: ${PICKER_CORRELATION_VALIDITY_HOURS:-6}
+      AUTH_USER_READ_ONLY_USERNAME: ${AUTH_USER_READ_ONLY_USERNAME:-ro_username}
+      AUTH_USER_READ_ONLY_PASSWORD: ${AUTH_USER_READ_ONLY_PASSWORD:-ro_password}
+      AUTH_USER_READ_WRITE_USERNAME: ${AUTH_USER_READ_WRITE_USERNAME:-rw_username}
+      AUTH_USER_READ_WRITE_PASSWORD: ${AUTH_USER_READ_WRITE_PASSWORD:-rw_password}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-fake-jwt-secret-1234567890}
+      AUTH_JWT_ACCESS_TOKEN_DURATION: ${AUTH_JWT_ACCESS_TOKEN_DURATION:-600}
+      AUTH_JWT_REFRESH_TOKEN_DURATION: ${AUTH_JWT_REFRESH_TOKEN_DURATION:-86400}
+      AUTH_API_KEY_READ_ONLY: ${AUTH_API_KEY_READ_ONLY:-api-key-read-only-replace-me}
+      AUTH_API_KEY_READ_WRITE: ${AUTH_API_KEY_READ_WRITE:-api-key-read-write-replace-me}
+      AUTH_API_KEY_READ_ONLY_USERNAME: ${AUTH_API_KEY_READ_ONLY_USERNAME:-m2m_ro_username}
+      AUTH_API_KEY_READ_WRITE_USERNAME: ${AUTH_API_KEY_READ_WRITE_USERNAME:-m2m_rw_username}
+    healthcheck:
+      test: >
+        sh -c 'wget -S -q  -O -  http://127.0.0.1:8001/api/v1/health-check 2>&1 >/dev/null | grep "200 OK"'
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - aimm-network
+
+  mm-cli:
+    image: aimodelmatch/backend-cli:latest
+    restart: unless-stopped
+    depends_on:
+      mm-webapp:
+        condition: service_healthy
+    environment:
+      DB_HOST: ${DB_HOST:-mm-database}
+      DB_PORT: ${DB_PORT:-5432}
+      DB_USERNAME: ${DB_USERNAME:-aimodelmatch}
+      DB_PASSWORD: ${DB_PASSWORD:-aimodelmatch}
+      DB_USER: ${DB_USER:-aimodelmatch}
+      DB_NAME: ${DB_NAME:-aimodelmatch}
+      DB_SSL_MODE: ${DB_SSL_MODE:-disable}
+      DB_LOG_SLOW_QUERY_THRESHOLD: ${DB_LOG_SLOW_QUERY_THRESHOLD:-1}
+      APP_PORT: ${APP_PORT:-8001}
+      APP_MODE: ${APP_MODE:-debug}
+      APP_CORS_ORIGIN: ${APP_CORS_ORIGIN:-http://localhost:5173}
+      SEARCH_RELEVANCE_THRESHOLD: ${SEARCH_RELEVANCE_THRESHOLD:-0.05}
+      PUBSUB_PERSIST_EVENTS_ON_DB: ${PUBSUB_PERSIST_EVENTS_ON_DB:-true}
+      PUBSUB_PERSIST_EVENTS_RETENTION_DAYS: ${PUBSUB_PERSIST_EVENTS_RETENTION_DAYS:-365}
+      PUBSUB_SYNC_MODE: ${PUBSUB_SYNC_MODE:-false}
+      PICKER_CORRELATION_VALIDITY_HOURS: ${PICKER_CORRELATION_VALIDITY_HOURS:-6}
+      AUTH_USER_READ_ONLY_USERNAME: ${AUTH_USER_READ_ONLY_USERNAME:-ro_username}
+      AUTH_USER_READ_ONLY_PASSWORD: ${AUTH_USER_READ_ONLY_PASSWORD:-ro_password}
+      AUTH_USER_READ_WRITE_USERNAME: ${AUTH_USER_READ_WRITE_USERNAME:-rw_username}
+      AUTH_USER_READ_WRITE_PASSWORD: ${AUTH_USER_READ_WRITE_PASSWORD:-rw_username}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-fake-jwt-secret-1234567890}
+      AUTH_JWT_ACCESS_TOKEN_DURATION: ${AUTH_JWT_ACCESS_TOKEN_DURATION:-600}
+      AUTH_JWT_REFRESH_TOKEN_DURATION: ${AUTH_JWT_REFRESH_TOKEN_DURATION:-86400}
+      AUTH_API_KEY_READ_ONLY: ${AUTH_API_KEY_READ_ONLY:-api-key-read-only-replace-me}
+      AUTH_API_KEY_READ_WRITE: ${AUTH_API_KEY_READ_WRITE:-api-key-read-write-replace-me}
+      AUTH_API_KEY_READ_ONLY_USERNAME: ${AUTH_API_KEY_READ_ONLY_USERNAME:-m2m_ro_username}
+      AUTH_API_KEY_READ_WRITE_USERNAME: ${AUTH_API_KEY_READ_WRITE_USERNAME:-m2m_rw_username}
+    networks:
+      - aimm-network
+
+  mm-frontend:
+    image: aimodelmatch/frontend-webapp:latest
+    restart: unless-stopped
+    depends_on:
+      mm-webapp:
+        condition: service_healthy
+    ports:
+      - 5173:5173
+    environment:
+      VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:8001}
+      VITE_DATE_FORMAT: ${VITE_DATE_FORMAT:-yyyy-MM-dd, HH:mm}
+    networks:
+      - aimm-network
+
+networks:
+  aimm-network:
+    driver: bridge

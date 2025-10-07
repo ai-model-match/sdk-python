@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-model-match"
+version = "1.0.0"
+description = "AI Model Match is an open-source service that helps product teams release, test, and optimize prompt configurations for AI-powered applications."
+readme = "README.md"
+authors = [
+  { name = "Lorenzo Castelli", email = "lory.castelli+modelmatch@gmail.com" }
+]
+requires-python = ">=3.8"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent"
+]
+license = "MIT"
+
+[project.urls]
+Homepage = "https://pypi.org/project/ai-model-match"
+Repository = "https://github.com/ai-model-match/sdk-python"
+
+
+[tool.setuptools.packages.find]
+where = ["src"]
