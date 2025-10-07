@@ -12,4 +12,5 @@ class AIMMBaseClient:
     def post(self, endpoint: str, data: Optional[dict] = None) -> dict:
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         response = requests.post(url, headers=self.headers, json=data)
+        response.raise_for_status()
         return response.json()
