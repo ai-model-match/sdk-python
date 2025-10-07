@@ -65,6 +65,5 @@ class AIMMPickerDTO:
 
     @staticmethod
     def from_dict(data: dict) -> "AIMMPickerDTO":
-        print(data)
         item = ItemDTO.from_dict(data["item"])
         return AIMMPickerDTO(item=item)

@@ -28,6 +28,5 @@ class AIMMFeedbackDTO:
 
     @staticmethod
     def from_dict(data: dict) -> "AIMMFeedbackDTO":
-        print(data)
         item = FeedbackItemDTO.from_dict(data["item"])
         return AIMMFeedbackDTO(item=item)
