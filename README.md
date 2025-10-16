@@ -135,7 +135,8 @@ print("Prompt configuration:", picker_response.output_message.parameters)
 # After the session, send feedback (score can be a combination of relevance, quality, speed, etc.)
 score = 4.5  # Example: weighted average based on your own criteria
 comment = "Prompt was relevant and fast, but could be more creative."
-feedback_response = client.SendFeedback(correlation_id, score, comment)
+correlation_link = "https://api.smith.langchain.com/runs/<<RUN_ID>>"
+feedback_response = client.SendFeedback(correlation_id, score, comment, correlation_link)
 print("Feedback submitted:", feedback_response.status)
 ```
 
