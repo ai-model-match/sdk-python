@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-model-match"
-version = "1.0.3"
+version = "1.0.4"
 description = "AI Model Match is an open-source service that helps product teams release, test, and optimize prompt configurations for AI-powered applications."
 readme = "README.md"
 authors = [
