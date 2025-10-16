@@ -151,6 +151,24 @@ Install both with:
 python3 -m pip install --upgrade build twine
 ```
 
+And activate the Virtual ENV:
+
+```bash
+source venv/bin/activate
+```
+
+Once done, you can deactivate it with:
+
+```bash
+deactivate
+```
+
+Before building and deploy a new version, ensure to run unit tests:
+
+```bash
+PYTHONPATH=src pytest
+```
+
 ### Build & Deploy
 
 To release a new version of the SDK to PyPI, follow these steps:

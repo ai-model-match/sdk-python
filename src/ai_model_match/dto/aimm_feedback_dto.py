@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 @dataclass
 class FeedbackItemDTO:
@@ -6,8 +7,9 @@ class FeedbackItemDTO:
     use_case_id: str
     flow_id: str
     correlation_id: str
-    score: float
-    comment: str
+    synthetic_score: float
+    comment: Optional[str]
+    reference_link: Optional[str]
     created_at: str
 
     @staticmethod
@@ -17,8 +19,9 @@ class FeedbackItemDTO:
             use_case_id=data["useCaseId"],
             flow_id=data["flowId"],
             correlation_id=data["correlationId"],
-            score=data["score"],
-            comment=data["comment"],
+            synthetic_score=data["syntheticScore"],
+            comment=data.get("comment"),
+            reference_link=data.get("referenceLink"),
             created_at=data["createdAt"]
         )
 

@@ -33,32 +33,36 @@ class AIMMClient(AIMMBaseClient):
         }
         data = self.post(url, payload)
         return AIMMPickerDTO.from_dict(data)
-    
-    def SendFeedback(self, correlation_id: uuid.UUID, score: float, comment: str):
+
+    def SendFeedback(self, correlation_id: uuid.UUID, synthetic_score: float, comment: str = None, reference_link: str = None) -> AIMMFeedbackDTO:
         """
         Sends feedback data to AI Model Match for a given correlation ID request.
 
         Args:
             correlation_id (uuid.UUID): The unique identifier of the request.
-            score (float): The feedback score to be submitted (must be between 1 and 5).
-            comment (str): Additional comments or feedback (max 4096 chars).
+            synthetic_score (float): The feedback synthetic score to be submitted (must be between 1 and 5).
+            comment (str): Optional comments or feedback (max 4096 chars).
+            referenceLink (str): Optional link to reference material or context for the feedback (max 4096 chars).
 
         Returns:
             AIMMFeedbackDTO: The JSON response from the server after submitting the feedback.
 
         Raises:
-            ValueError: If score is not between 1 and 5, or comment exceeds 4096 chars.
+            ValueError: If synthetic_score is not between 1 and 5, or comment exceeds 4096 chars.
             requests.HTTPError: If the HTTP request to the server fails.
         """
-        if not (1 <= score <= 5):
-            raise ValueError("Score must be between 1 and 5.")
-        if len(comment) > 4096:
+        if not (1 <= synthetic_score <= 5):
+            raise ValueError("Synthetic score must be between 1 and 5.")
+        if comment and len(comment) > 4096:
             raise ValueError("Comment must not exceed 4096 characters.")
+        if reference_link and len(reference_link) > 4096:
+            raise ValueError("Reference link must not exceed 4096 characters.")
         url = f"api/v1/feedbacks"
         payload = {
             "correlationId": str(correlation_id),
-            "score": score,
-            "comment": comment
+            "syntheticScore": synthetic_score,
+            "comment": comment,
+            "referenceLink": reference_link
         }
         data = self.post(url, payload)
         return AIMMFeedbackDTO.from_dict(data)
